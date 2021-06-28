@@ -1,10 +1,15 @@
 <template>
     <div>
-        <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-            <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-        </el-breadcrumb>
+
+        <breadcrumb>
+            <template slot="bb">
+                <span>用户管理</span>
+            </template>
+            <template slot="aa">
+                <span>列表管理</span>
+            </template>
+        </breadcrumb>
+
         <!-- 卡片视图 -->
         <el-card>
             <!-- 搜索区域 -->
@@ -44,7 +49,8 @@
                         </el-button>
 
                         <el-tooltip class="item" effect="dark" content="分配角色" placement="top" :enterable='false'>
-                            <el-button type="warning" icon="el-icon-share" size='mini'></el-button>
+                            <el-button type="warning" icon="el-icon-share" size='mini' @click='setRole(scope.row)'>
+                            </el-button>
                         </el-tooltip>
 
                     </template>
@@ -108,7 +114,22 @@
                 </span>
             </el-dialog>
 
-            <!--  -->
+            <!-- 角色分配 -->
+            <el-dialog title="分配角色" :visible.sync="setDialogVisible" width="50%" @close='setRoleDialogClosed'>
+                <p>当前用户: {{user.username}}</p>
+                <p>当前角色: {{user.role_name}}</p>
+                <p>分配新角色:
+                    <el-select v-model="selectedRoleId" placeholder="请选择">
+                        <el-option v-for="item in rolesList" :key="item.id" :label="item.roleName" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </p>
+
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="setDialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+                </span>
+            </el-dialog>
         </el-card>
     </div>
 </template>
@@ -116,7 +137,8 @@
 <script>
     //验证规则
     import { verify } from 'components/common/verify'
-
+    import breadcrumb from 'views/breadcrumb'
+    import { getRolesList } from 'network/request'
     export default {
         data() {
 
@@ -145,7 +167,16 @@
                 ediDialogVisible: false,
 
                 //查询到的用户信息
-                editFrom: {}
+                editFrom: {},
+
+                // 角色分配
+                setDialogVisible: false,
+                user: {},
+                userId: '',
+                // 所有的角色列表
+                rolesList: {},
+
+                selectedRoleId: ''
             }
 
 
@@ -153,6 +184,9 @@
 
         created() {
             this.getUserList()
+        },
+        components: {
+            breadcrumb
         },
 
         methods: {
@@ -266,6 +300,44 @@
                 }
                 this.$message.success('删除成功')
                 this.getUserList()
+                console.log(this.user.id);
+                console.log(this.selectedRoleId);
+            },
+
+            // 角色分配展示
+            setRole(user) {
+                // this.$http.get('roles')
+                getRolesList().then(res => {
+                    if (res.data.meta.status !== 200) {
+                        this.$message.error('获取角色列表失败')
+                    }
+                    this.rolesList = res.data.data
+                    this.$message.success('获取角色列表成功')
+                })
+                this.userId = user.id
+                console.log(this.userId);
+                this.user = user
+                this.setDialogVisible = true
+            },
+
+            // 点击按钮角色分配
+            async saveRoleInfo() {
+                if (!this.selectedRoleId) {
+                    return this.$message.error('请选择分配的角色')
+                }
+
+                const { data: res } = await this.$http.put(`users/${this.userId}/role`,
+                    { rid: this.selectedRoleId })
+
+                if (res.meta.status !== 200) {
+                    return this.$message.error('更新角色失败')
+                }
+                this.$message.success('角色更新成功')
+                this.getRolesList()
+                this.setDialogVisible = false
+            },
+            setRoleDialogClosed() {
+                this.selectedRoleId = ''
             }
         },
 

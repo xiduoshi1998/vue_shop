@@ -58,6 +58,7 @@
                 isCollapse: false
             }
         },
+
         methods: {
             logout() {
                 // 清除sessionStorage里的数据

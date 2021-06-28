@@ -33,6 +33,10 @@ export let verify = {
         mobile: [
             { required: true, message: '请输入手机', trigger: 'blur' },
             { validator: checkmobile, trigger: "blur" }
+        ],
+        role: [
+            { required: true, message: '请输入描述', trigger: 'blur' },
+            { min: 6, max: 15, message: '长度在 6 到 15 个字符', trigger: 'blur' }
         ]
     }
 }
