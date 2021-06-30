@@ -4,7 +4,9 @@ import router from './router'
 import store from './store'
 import 'assets/css/global.css'
 import Element from 'element-ui';
+import TreeTable from 'vue-table-with-tree-grid'
 Vue.use(Element);
+
 
 import axios from 'axios'
 // 请求路径
@@ -19,6 +21,7 @@ axios.interceptors.request.use(config => {
 
 Vue.config.productionTip = false
 
+Vue.component('tree-table', TreeTable)
 new Vue({
   router,
   store,
