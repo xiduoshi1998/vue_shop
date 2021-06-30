@@ -251,6 +251,10 @@
                 const { data: res } = await this.$http.put(`categories/${this.cateID}/attributes/${this.fenleiid}`, {
                     attr_name: this.ediFrom.attr_name,
                     attr_sel: this.activeName
+<<<<<<< HEAD
+=======
+
+>>>>>>> goods_params
                 })
                 if (res.meta.status !== 200) {
                     return this.$message.error('修改' `${this.titleText}` + '失败')

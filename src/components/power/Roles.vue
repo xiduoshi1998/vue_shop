@@ -187,8 +187,7 @@
                     return this.$message.error('删除权限失败！')
                 }
                 role.children = res.data
-                //   不建议使用
-                // this.getRolesList()
+
             },
             // 分配权限
             async showSetRightDialog(role) {
