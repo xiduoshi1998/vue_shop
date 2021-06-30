@@ -34,7 +34,25 @@
                     <el-button type='primary' :disabled='isBtnDisabled' @click='addDialogVisible=true'>添加参数
                     </el-button>
                     <el-table :data='manyDate' border stripe>
-                        <el-table-column type='expand'></el-table-column>
+                        <!-- 展开行 -->
+                        <el-table-column type='expand'>
+                            <template v-slot='scope'>
+                                <el-tag v-for='(item,index ) in scope.row.attr_vals' :key='index' closable
+                                    @close='handClose(index,scope.row)'>
+                                    {{item}}
+                                </el-tag>
+                                <!-- 输入文本框 -->
+                                <el-input v-if="scope.row.inputVisible" v-model="scope.row.inputValue"
+                                    ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)"
+                                    @blur="handleInputConfirm(scope.row)" class="input-new-tag">
+                                </el-input>
+                                <!-- 添加文本框 -->
+                                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+
+                                    添加
+                                </el-button>
+                            </template>
+                        </el-table-column>
+
                         <el-table-column type='index' label='#'></el-table-column>
                         <el-table-column label='参数名称' prop='attr_name'></el-table-column>
 
@@ -56,7 +74,24 @@
                     <el-button type='primary' :disabled='isBtnDisabled' @click='addDialogVisible=true'>添加属性
                     </el-button>
                     <el-table :data='onlyDate' border stripe>
-                        <el-table-column type='expand'></el-table-column>
+
+                        <el-table-column type='expand'>
+                            <template v-slot='scope'>
+                                <el-tag v-for='(item,index ) in scope.row.attr_vals' :key='index' closable
+                                    @close='handClose(index,scope.row)'>
+                                    {{item}}
+                                </el-tag>
+                                <!-- 输入文本框 -->
+                                <el-input v-if="scope.row.inputVisible" v-model="scope.row.inputValue"
+                                    ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)"
+                                    @blur="handleInputConfirm(scope.row)" class="input-new-tag">
+                                </el-input>
+                                <!-- 添加文本框 -->
+                                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+
+                                    添加
+                                </el-button>
+                            </template>
+                        </el-table-column>
                         <el-table-column type='index' label='#'></el-table-column>
                         <el-table-column label='参数名称' prop='attr_name'></el-table-column>
 
@@ -150,7 +185,8 @@
                 },
                 // 分类id
 
-                fenleiid: ''
+                fenleiid: '',
+
             }
         },
         computed: {
@@ -197,16 +233,25 @@
                 // 不是三级分类
                 if (this.selectedKeys.length !== 3) {
                     this.selectedKeys = []
+                    this.manyDate = [],
+                        this.onlyDate = []
                     return
                 }
 
                 //根据 所选的分类ID，获取对应的参数
                 const { data: res } = await this.$http.get(`categories/${this.cateID}/attributes`,
                     { params: { sel: this.activeName } })
+
                 if (res.meta.status !== 200) {
                     return this.$message.error('获取参数列表失败')
                 }
 
+                res.data.forEach(item => {
+                    item.attr_vals = item.attr_vals ? item.attr_vals.split(' ') : []
+                    item.inputVisible = false
+                    item.inputValue = ''
+                })
+                console.log(res.data);
                 if (this.activeName === 'many') {
                     this.manyDate = res.data
                 } else {
@@ -251,10 +296,6 @@
                 const { data: res } = await this.$http.put(`categories/${this.cateID}/attributes/${this.fenleiid}`, {
                     attr_name: this.ediFrom.attr_name,
                     attr_sel: this.activeName
-<<<<<<< HEAD
-=======
-
->>>>>>> goods_params
                 })
                 if (res.meta.status !== 200) {
                     return this.$message.error('修改' `${this.titleText}` + '失败')
@@ -281,6 +322,48 @@
                     this.$message.success('删除成功')
                     this.getCateList()
                 }
+            },
+
+            // 触发文本框
+            async handleInputConfirm(row) {
+                // 输入的内容不等于0
+                if (row.inputValue.trim().length === 0) {
+                    row.inputValue = '',
+                        row.inputVisible = false
+                    return
+                }
+                // 输入了内容 需要做下一步操作
+                row.attr_vals.push(row.inputValue.trim())
+                row.inputValue = '',
+                    row.inputVisible = false
+
+                this.saveAttrVals(row)
+            },
+            async saveAttrVals(row) {
+                // 发起请求 把参数可选项保存起来
+                const { data: res } = await this.$http.put(`categories/${this.cateID}/attributes/${row.attr_id}`, {
+                    attr_name: row.attr_name,
+                    attr_sel: row.attr_sel,
+                    attr_vals: row.attr_vals.join(' ')
+                })
+                if (res.meta.status !== 200) {
+                    this.$message.error('添加失败')
+                }
+                this.$message.success('修改成功')
+            },
+
+            // 删除参数可选项
+            handClose(index, row) {
+                row.attr_vals.splice(index, 1)
+                this.saveAttrVals(row)
+
+            },
+            // this.$nextTick 页面重新渲染会回调的函数
+            showInput(row) {
+                row.inputVisible = true
+                this.$nextTick(_ => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
             }
         },
 
@@ -293,5 +376,13 @@
 <style scoped>
     .cat_pot {
         margin: 20px 0px;
+    }
+
+    .el-tag {
+        margin-right: 10px;
+    }
+
+    .input-new-tag {
+        width: 120px;
     }
 </style>
