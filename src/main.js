@@ -5,7 +5,26 @@ import store from './store'
 import 'assets/css/global.css'
 import Element from 'element-ui';
 import TreeTable from 'vue-table-with-tree-grid'
+import VueQuillEditor from 'vue-quill-editor';
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 Vue.use(Element);
+// 富文本
+Vue.use(VueQuillEditor)
+
+// 格式化时间
+Vue.filter('dateFormat', function (originVal) {
+  const dt = new Date(originVal * 1000)
+  const y = dt.getFullYear();
+  const m = (dt.getMonth() + 1 + '').padStart(2, '0');
+  const d = (dt.getDate() + 1 + '').padStart(2, '0');
+
+  const hh = (dt.getHours() + 1 + '').padStart(2, '0');
+  const mm = (dt.getMinutes() + 1 + '').padStart(2, '0');
+  const ss = (dt.getDate() + 1 + '').padStart(2, '0');
+  return `${y}-${m}-${d}-${hh}:${mm}:${ss}`
+})
 
 
 import axios from 'axios'
