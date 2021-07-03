@@ -300,8 +300,6 @@
                 }
                 this.$message.success('删除成功')
                 this.getUserList()
-                console.log(this.user.id);
-                console.log(this.selectedRoleId);
             },
 
             // 角色分配展示
@@ -315,7 +313,6 @@
                     this.$message.success('获取角色列表成功')
                 })
                 this.userId = user.id
-                console.log(this.userId);
                 this.user = user
                 this.setDialogVisible = true
             },

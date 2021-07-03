@@ -222,7 +222,7 @@
 
             // 添加角色对话框的关闭
             addRoleDialogClosed() {
-                this.$refs.addRoleFormRef.resetFields()
+                this.$refs.editRoleFormRef.resetFields()
             },
 
             // 添加角色
